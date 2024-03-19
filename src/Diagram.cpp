@@ -9,6 +9,7 @@ using std::endl;
 Diagram::~Diagram() {
 	for (Cell* c : cells) {
 		freeVecMemory(c->halfEdges);
+		cellPool.destroy(c);
 	}
 }
 
