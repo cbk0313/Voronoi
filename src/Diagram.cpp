@@ -15,21 +15,21 @@ Diagram::~Diagram() {
 
 Point2* Diagram::createVertex(double x, double y) {
 	Point2* vert = vertexPool.newElement(Point2(x, y));
-	tmpVertices.insert(vert);
+	vertices.push_back(vert);
 
 	return vert;
 }
 
 Cell* Diagram::createCell(Point2 site) {
 	Cell* cell = cellPool.newElement(site);
-	tmpCells.insert(cell);
+	cells.push_back(cell);
 
 	return cell;
 }
 
 Edge* Diagram::createEdge(Site* lSite, Site* rSite, Point2* vertA, Point2* vertB) {
 	Edge* edge = edgePool.newElement(Edge(lSite, rSite));
-	tmpEdges.insert(edge);
+	edges.push_back(edge);
 
 	if (vertA) edge->setStartPoint(lSite, rSite, vertA);
 	if (vertB) edge->setEndPoint(lSite, rSite, vertB);
@@ -42,7 +42,7 @@ Edge* Diagram::createEdge(Site* lSite, Site* rSite, Point2* vertA, Point2* vertB
 
 Edge* Diagram::createBorderEdge(Site* lSite, Point2* vertA, Point2* vertB) {
 	Edge* edge = edgePool.newElement(Edge(lSite, nullptr, vertA, vertB));
-	tmpEdges.insert(edge);
+	edges.push_back(edge);
 
 	return edge;
 }
@@ -78,7 +78,7 @@ bool Diagram::connectEdge(Edge* edge, BoundingBox bbox) {
 	// get the line equation of the bisector if line is not vertical
 	if (ry != ly) {
 		fm = (lx - rx) / (ry - ly);
-		fb = fy - fm*fx;
+		fb = fy - fm * fx;
 	}
 
 	// remember, direction of line (relative to left site):
@@ -150,22 +150,22 @@ bool Diagram::connectEdge(Edge* edge, BoundingBox bbox) {
 		// rightward
 		if (ly < ry) {
 			if (!va || va->x < bbox.xL) {
-				va = createVertex(bbox.xL, fm*bbox.xL + fb);
+				va = createVertex(bbox.xL, fm * bbox.xL + fb);
 			}
 			else if (va->x >= bbox.xR) {
 				return false;
 			}
-			vb = createVertex(bbox.xR, fm*bbox.xR + fb);
+			vb = createVertex(bbox.xR, fm * bbox.xR + fb);
 		}
 		// leftward
 		else {
 			if (!va || va->x > bbox.xR) {
-				va = createVertex(bbox.xR, fm*bbox.xR + fb);
+				va = createVertex(bbox.xR, fm * bbox.xR + fb);
 			}
 			else if (va->x < bbox.xL) {
 				return false;
 			}
-			vb = createVertex(bbox.xL, fm*bbox.xL + fb);
+			vb = createVertex(bbox.xL, fm * bbox.xL + fb);
 		}
 	}
 	edge->vertA = va;
@@ -189,51 +189,51 @@ bool Diagram::clipEdge(Edge* edge, BoundingBox bbox) {
 	double dy = by - ay;
 	// left
 	double q = ax - bbox.xL;
-	if (dx == 0 && q<0) { return false; }
+	if (dx == 0 && q < 0) { return false; }
 	double r = -q / dx;
 	if (dx < 0) {
 		if (r < t0) { return false; }
 		if (r < t1) { t1 = r; }
 	}
-	else if (dx>0) {
+	else if (dx > 0) {
 		if (r > t1) { return false; }
 		if (r > t0) { t0 = r; }
 	}
 	// right
 	q = bbox.xR - ax;
-	if (dx == 0 && q<0) { return false; }
+	if (dx == 0 && q < 0) { return false; }
 	r = q / dx;
-	if (dx<0) {
-		if (r>t1) { return false; }
-		if (r>t0) { t0 = r; }
+	if (dx < 0) {
+		if (r > t1) { return false; }
+		if (r > t0) { t0 = r; }
 	}
-	else if (dx>0) {
-		if (r<t0) { return false; }
-		if (r<t1) { t1 = r; }
+	else if (dx > 0) {
+		if (r < t0) { return false; }
+		if (r < t1) { t1 = r; }
 	}
 	// top
 	q = ay - bbox.yT;
-	if (dy == 0 && q<0) { return false; }
+	if (dy == 0 && q < 0) { return false; }
 	r = -q / dy;
-	if (dy<0) {
-		if (r<t0) { return false; }
-		if (r<t1) { t1 = r; }
+	if (dy < 0) {
+		if (r < t0) { return false; }
+		if (r < t1) { t1 = r; }
 	}
-	else if (dy>0) {
-		if (r>t1) { return false; }
-		if (r>t0) { t0 = r; }
+	else if (dy > 0) {
+		if (r > t1) { return false; }
+		if (r > t0) { t0 = r; }
 	}
 	// bottom        
 	q = bbox.yB - ay;
-	if (dy == 0 && q<0) { return false; }
+	if (dy == 0 && q < 0) { return false; }
 	r = q / dy;
-	if (dy<0) {
-		if (r>t1) { return false; }
-		if (r>t0) { t0 = r; }
+	if (dy < 0) {
+		if (r > t1) { return false; }
+		if (r > t0) { t0 = r; }
 	}
-	else if (dy>0) {
-		if (r<t0) { return false; }
-		if (r<t1) { t1 = r; }
+	else if (dy > 0) {
+		if (r < t0) { return false; }
+		if (r < t1) { t1 = r; }
 	}
 
 	// if we reach this point, Voronoi edge is within bbox
@@ -243,7 +243,7 @@ bool Diagram::clipEdge(Edge* edge, BoundingBox bbox) {
 	// than modifying the existing one, since the existing
 	// one is likely shared with at least another edge
 	if (t0 > 0) {
-		edge->vertA = createVertex(ax + t0*dx, ay + t0*dy);
+		edge->vertA = createVertex(ax + t0 * dx, ay + t0 * dy);
 	}
 
 	// if t1 < 1, vb needs to change
@@ -251,7 +251,7 @@ bool Diagram::clipEdge(Edge* edge, BoundingBox bbox) {
 	// than modifying the existing one, since the existing
 	// one is likely shared with at least another edge
 	if (t1 < 1) {
-		edge->vertB = createVertex(ax + t1*dx, ay + t1*dy);
+		edge->vertB = createVertex(ax + t1 * dx, ay + t1 * dy);
 	}
 
 	// va and/or vb were clipped, thus we will need to close
@@ -268,49 +268,56 @@ bool Diagram::clipEdge(Edge* edge, BoundingBox bbox) {
 void Diagram::clipEdges(BoundingBox bbox) {
 	// connect all dangling edges to bounding box
 	// or get rid of them if it can't be done
-	std::vector<Edge*> toRemove;
+	std::vector<Edge*> tmpCell(edges);
+	edges.clear();
+	edges.reserve(edges.size());
 
-	for(Edge* edge : tmpEdges) {
+	for (Edge* edge : tmpCell) {
 		// edge is removed if:
 		//   it is wholly outside the bounding box
 		//   it is looking more like a point than a line
-		if (!connectEdge(edge, bbox) || !clipEdge(edge, bbox) 
-				|| (eq_withEpsilon(edge->vertA->x, edge->vertB->x) && eq_withEpsilon(edge->vertA->y, edge->vertB->y))) {
+		if (!connectEdge(edge, bbox) || !clipEdge(edge, bbox)
+			|| (eq_withEpsilon(edge->vertA->x, edge->vertB->x) && eq_withEpsilon(edge->vertA->y, edge->vertB->y))) {
 			edge->vertA = edge->vertB = nullptr;
-			toRemove.push_back(edge);
+			//toRemove.push_back(edge);
+
+			std::vector<HalfEdge*>* halfEdges;
+			size_t edgeCount;
+			HalfEdge* he;
+			Edge* e = edge;
+
+			//remove lSite halfEdges
+			halfEdges = &e->lSite->cell->halfEdges;
+			edgeCount = halfEdges->size();
+			while (edgeCount) {
+				he = halfEdges->at(--edgeCount);
+				if (he->edge == e) {
+					halfEdges->erase(halfEdges->begin() + edgeCount);
+					halfEdgePool.deleteElement(he);
+				}
+			}
+
+			//remove rSite halfEdges
+			halfEdges = &e->rSite->cell->halfEdges;
+			edgeCount = halfEdges->size();
+			while (edgeCount) {
+				he = halfEdges->at(--edgeCount);
+				if (he->edge == e) {
+					halfEdges->erase(halfEdges->begin() + edgeCount);
+					halfEdgePool.deleteElement(he);
+				}
+			}
+
+			//remove edge
+			//tmpEdges.erase(e);
+			edgePool.deleteElement(e);
+		}
+		else {
+			edges.push_back(edge);
 		}
 	}
-	for (Edge* e : toRemove) {
-		std::vector<HalfEdge*>* halfEdges;
-		size_t edgeCount;
-		HalfEdge* he;
-
-		//remove lSite halfEdges
-		halfEdges = &e->lSite->cell->halfEdges;
-		edgeCount = halfEdges->size();
-		while (edgeCount) {
-			he = halfEdges->at(--edgeCount);
-			if (he->edge == e) {
-				halfEdges->erase(halfEdges->begin() + edgeCount);
-				halfEdgePool.deleteElement(he);
-			}
-		}
-
-		//remove rSite halfEdges
-		halfEdges = &e->rSite->cell->halfEdges;
-		edgeCount = halfEdges->size();
-		while (edgeCount) {
-			he = halfEdges->at(--edgeCount);
-			if (he->edge == e) {
-				halfEdges->erase(halfEdges->begin() + edgeCount);
-				halfEdgePool.deleteElement(he);
-			}
-		}
-
-		//remove edge
-		tmpEdges.erase(e);
-		edgePool.deleteElement(e);
-	}
+	edges.resize(edges.size());
+	//edges = tmpCell;
 }
 
 // Close the cells.
@@ -324,7 +331,7 @@ void Diagram::closeCells(BoundingBox bbox) {
 	Edge* edge;
 	std::vector<HalfEdge*>* halfEdges;
 
-	for (Cell* cell : tmpCells) {
+	for (Cell* cell : cells) {
 		// prune, order halfedges counterclockwise, then add missing ones
 		// required to close cells
 		halfEdges = &cell->halfEdges;
@@ -443,23 +450,23 @@ void Diagram::closeCells(BoundingBox bbox) {
 }
 
 void Diagram::finalize() {
-	cells.reserve(tmpCells.size());
-	for (Cell* c : tmpCells) {
+	/*cells.reserve(cells.size());
+	for (Cell* c : cells) {
 		cells.push_back(c);
 	}
-	tmpCells.clear();
+	cells.clear();
 
-	edges.reserve(tmpEdges.size());
-	for (Edge* e : tmpEdges) {
+	edges.reserve(edges.size());
+	for (Edge* e : edges) {
 		edges.push_back(e);
 	}
-	tmpEdges.clear();
+	edges.clear();
 
-	vertices.reserve(tmpVertices.size());
-	for (Point2* v : tmpVertices) {
+	vertices.reserve(vertices.size());
+	for (Point2* v : vertices) {
 		vertices.push_back(v);
 	}
-	tmpVertices.clear();
+	vertices.clear();*/
 }
 
 void Diagram::printDiagram() {
@@ -477,7 +484,7 @@ void Diagram::printDiagram() {
 		cout << endl;
 	}
 	else {
-		for (Cell* c : tmpCells) {
+		for (Cell* c : cells) {
 			cout << c->site.p << endl;
 			for (HalfEdge* e : c->halfEdges) {
 				Point2* pS = e->startPoint();
@@ -493,7 +500,7 @@ void Diagram::printDiagram() {
 			}
 			cout << endl;
 		}
-		for (Edge* e : tmpEdges) {
+		for (Edge* e : edges) {
 			if (e->vertA)
 				cout << *e->vertA;
 			else

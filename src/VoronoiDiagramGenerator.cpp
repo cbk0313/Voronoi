@@ -30,6 +30,7 @@ bool pointComparator(Point2* a, Point2* b) {
 
 Diagram* VoronoiDiagramGenerator::compute(std::vector<Point2>& sites, BoundingBox bbox) {
 	siteEventQueue = new std::vector<Point2*>();
+	siteEventQueue->reserve(sites.size());
 	boundingBox = bbox;
 
 	for (size_t i = 0; i < sites.size(); ++i) {
@@ -89,7 +90,7 @@ Diagram* VoronoiDiagramGenerator::compute(std::vector<Point2>& sites, BoundingBo
 	//   add missing edges in order to close open cells
 	diagram->closeCells(boundingBox);
 
-	diagram->finalize();
+	//diagram->finalize();
 
 	delete circleEventQueue;
 	circleEventQueue = nullptr;

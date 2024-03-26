@@ -5,7 +5,10 @@
 //#include "../src/MemoryPool/C-98/MemoryPool.h" //You will need to use this version instead of the one above if your compiler doesn't handle C++11's noexcept operator
 #include "Edge.h"
 #include "Cell.h"
-#include <set>
+
+template<typename T>
+struct UnionArray;
+
 
 struct BoundingBox;
 class Diagram {
@@ -14,14 +17,15 @@ public:
 	std::vector<Edge*> edges;
 	std::vector<Point2*> vertices;
 
+
 	~Diagram();
 	void printDiagram();
 private:
 	friend class VoronoiDiagramGenerator;
 
-	std::set<Cell*> tmpCells;
-	std::set<Edge*> tmpEdges;
-	std::set<Point2*> tmpVertices;
+	//std::vector<Cell*> tmpCells;
+	//std::vector<Edge*> tmpEdges;
+	//std::vector<Point2*> tmpVertices;
 
 	MemoryPool<Cell> cellPool;
 	MemoryPool<Edge> edgePool;
