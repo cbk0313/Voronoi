@@ -8,8 +8,19 @@ using std::endl;
 
 Diagram::~Diagram() {
 	for (Cell* c : cells) {
+		for (HalfEdge* hf : c->halfEdges) {
+			halfEdgePool.destroy(hf);
+		}
 		freeVecMemory(c->halfEdges);
 		cellPool.destroy(c);
+	}
+
+	for (Edge* e : edges) {
+		edgePool.destroy(e);
+	}
+
+	for (Point2* v : vertices) {
+		vertexPool.destroy(v);
 	}
 }
 
